@@ -1,103 +1,194 @@
-import Image from "next/image";
+"use client"
 
-export default function Home() {
+import { useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Navigation } from "@/components/layout/navigation"
+import { Footer } from "@/components/layout/footer"
+import { Sparkles, MessageCircle, Users, Zap, Loader2 } from "lucide-react"
+
+export default function HomePage() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/dashboard")
+    }
+  }, [status, router])
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (status === "authenticated") {
+    return null // Will redirect, so show nothing
+  }
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      
+      {/* Hero Section */}
+      <section className="container max-w-7xl px-4 py-20 md:py-32 mx-auto">
+        <div className="flex flex-col items-center text-center space-y-10 animate-fade-in">
+          <div className="space-y-8 max-w-5xl">
+            <div className="space-y-4">
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+                Meet{" "}
+                <span className="relative">
+                  <span className="gradient-text">Judie</span>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 blur-lg -z-10"></div>
+                </span>
+              </h1>
+              <div className="h-1 w-24 bg-gradient-to-r from-primary to-primary/50 mx-auto rounded-full"></div>
+            </div>
+            <p className="mx-auto max-w-[800px] text-xl text-muted-foreground md:text-2xl leading-relaxed">
+              Your AI-powered coaching companion. Get personalized guidance, 
+              smart conversation assistance, and unlock your potential with intelligent insights.
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 pt-6">
+            <Button 
+              size="lg" 
+              className="button-modern bg-primary hover:bg-primary/90 px-10 py-4 text-lg font-medium shadow-modern-lg hover:shadow-xl transition-all duration-300" 
+              asChild
+            >
+              <Link href="/signin">
+                Get Started
+                <div className="ml-2 h-5 w-5 rounded-full bg-white/20"></div>
+              </Link>
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              className="px-10 py-4 text-lg font-medium border-2 hover:bg-primary/5 transition-all duration-300" 
+              asChild
+            >
+              <Link href="/signup">Sign Up</Link>
+            </Button>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Features Section */}
+      <section className="container max-w-7xl px-4 py-20 md:py-32 mx-auto">
+        <div className="text-center space-y-8 mb-20 animate-slide-up">
+          <div className="space-y-4">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+              Why Choose <span className="gradient-text">Judie?</span>
+            </h2>
+            <div className="h-1 w-16 bg-gradient-to-r from-primary to-primary/50 mx-auto rounded-full"></div>
+          </div>
+          <p className="mx-auto max-w-[700px] text-muted-foreground text-xl leading-relaxed">
+            Discover the power of AI-assisted conversations and personalized coaching
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          <div className="group card-modern flex flex-col items-center text-center space-y-8 p-8 rounded-2xl hover:scale-105 transition-all duration-500">
+            <div className="relative">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-300">
+                <Sparkles className="h-10 w-10 text-primary" />
+              </div>
+              <div className="absolute -inset-2 bg-gradient-to-br from-primary/20 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold">AI-Powered Insights</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Get intelligent suggestions and conversation analysis powered by advanced AI
+              </p>
+            </div>
+          </div>
+          
+          <div className="group card-modern flex flex-col items-center text-center space-y-8 p-8 rounded-2xl hover:scale-105 transition-all duration-500">
+            <div className="relative">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-300">
+                <MessageCircle className="h-10 w-10 text-primary" />
+              </div>
+              <div className="absolute -inset-2 bg-gradient-to-br from-primary/20 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold">Smart Conversations</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Enhanced messaging with real-time suggestions and context-aware responses
+              </p>
+            </div>
+          </div>
+          
+          <div className="group card-modern flex flex-col items-center text-center space-y-8 p-8 rounded-2xl hover:scale-105 transition-all duration-500">
+            <div className="relative">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-300">
+                <Users className="h-10 w-10 text-primary" />
+              </div>
+              <div className="absolute -inset-2 bg-gradient-to-br from-primary/20 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold">Personal Coaching</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Receive personalized coaching and guidance tailored to your goals
+              </p>
+            </div>
+          </div>
+          
+          <div className="group card-modern flex flex-col items-center text-center space-y-8 p-8 rounded-2xl hover:scale-105 transition-all duration-500">
+            <div className="relative">
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 group-hover:from-primary/20 group-hover:to-primary/10 transition-all duration-300">
+                <Zap className="h-10 w-10 text-primary" />
+              </div>
+              <div className="absolute -inset-2 bg-gradient-to-br from-primary/20 to-transparent rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-2xl font-semibold">Lightning Fast</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Quick responses and instant insights to keep your conversations flowing
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="container max-w-7xl px-4 py-20 md:py-32 mx-auto">
+        <div className="relative">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-3xl blur-3xl"></div>
+          <div className="relative flex flex-col items-center text-center space-y-10 glass rounded-3xl border-2 p-12 md:p-20 shadow-modern-lg">
+            <div className="space-y-8 max-w-3xl">
+              <div className="space-y-4">
+                <h2 className="text-4xl md:text-5xl font-bold tracking-tight">
+                  Ready to Transform Your{" "}
+                  <span className="gradient-text">Conversations?</span>
+                </h2>
+                <div className="h-1 w-20 bg-gradient-to-r from-primary to-primary/50 mx-auto rounded-full"></div>
+              </div>
+              <p className="text-muted-foreground text-xl leading-relaxed">
+                Join thousands of users who are already experiencing the power of AI-assisted communication
+              </p>
+            </div>
+            
+            <div className="pt-4">
+              <Button 
+                size="lg" 
+                className="button-modern bg-primary hover:bg-primary/90 px-12 py-5 text-xl font-medium shadow-modern-lg hover:shadow-2xl transition-all duration-300" 
+                asChild
+              >
+                <Link href="/signin">
+                  Get Started Today
+                  <div className="ml-3 h-6 w-6 rounded-full bg-white/20"></div>
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <Footer />
     </div>
-  );
+  )
 }

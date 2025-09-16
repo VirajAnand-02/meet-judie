@@ -1,0 +1,191 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// NextAuth.js Models
+// https://next-auth.js.org/adapters/prisma
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  password      String?   // For credentials provider
+  bio           String?   // User biography
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  accounts      Account[]
+  sessions      Session[]
+  
+  // AI and Contact relationships
+  contacts         Contact[]
+  aiConversations  AiConversation[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Contact Management
+model Contact {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  name        String
+  email       String?
+  phone       String?
+  avatar      String?
+  company     String?
+  position    String?
+  notes       String?  @db.Text
+  tags        String[] // Array of tags for contact categorization
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations   Conversation[]   // Regular chat conversations
+  aiConversations AiConversation[] // AI conversations about this contact
+
+  @@map("contacts")
+}
+
+// Regular Chat Conversations (human-to-human)
+model Conversation {
+  id        String   @id @default(cuid())
+  contactId String   @map("contact_id")
+  userId    String   @map("user_id")
+  title     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  contact  Contact   @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@map("conversations")
+}
+
+// Regular Chat Messages (human-to-human)
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String   @map("conversation_id")
+  content        String   @db.Text
+  isFromUser     Boolean  @map("is_from_user") // true if message is from the logged-in user
+  timestamp      DateTime @default(now())
+  messageType    String   @default("text") @map("message_type") // text, image, file, etc.
+  metadata       Json?    // Additional message data (file info, etc.)
+
+  // Relations
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// AI Provider Configuration
+model AiProvider {
+  id          String   @id @default(cuid())
+  name        String   @unique // "gemini", "openai", "anthropic", etc.
+  displayName String   @map("display_name") // "Google Gemini", "OpenAI GPT", etc.
+  type        String   // "chat", "embedding", "completion"
+  config      Json     // Provider-specific configuration
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  aiConversations AiConversation[]
+
+  @@map("ai_providers")
+}
+
+// AI Conversations (user-to-AI about specific contacts)
+model AiConversation {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  contactId   String   @map("contact_id")
+  providerId  String   @map("provider_id")
+  title       String?
+  context     String?  @db.Text // System context about the contact
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contact  Contact      @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  provider AiProvider   @relation(fields: [providerId], references: [id])
+  messages AiMessage[]
+
+  // Ensure one AI conversation per contact per user per provider
+  @@unique([userId, contactId, providerId])
+  @@map("ai_conversations")
+}
+
+// AI Messages (AI conversation history)
+model AiMessage {
+  id               String   @id @default(cuid())
+  aiConversationId String   @map("ai_conversation_id")
+  role             String   // "user", "assistant", "system"
+  content          String   @db.Text
+  timestamp        DateTime @default(now())
+  tokenUsage       Json?    @map("token_usage") // Track token consumption
+  metadata         Json?    // Model version, temperature, etc.
+
+  // Relations
+  aiConversation AiConversation @relation(fields: [aiConversationId], references: [id], onDelete: Cascade)
+
+  @@map("ai_messages")
+}
