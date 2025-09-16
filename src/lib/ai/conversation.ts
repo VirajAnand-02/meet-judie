@@ -6,7 +6,6 @@
 import { prisma } from '@/lib/prisma'
 import { AIConversationService, AIMessage, AIConversationContext } from './types'
 import { AIProviderRegistry } from './registry'
-import { v4 as uuidv4 } from 'uuid'
 
 export class ConversationService implements AIConversationService {
   private defaultProvider = 'gemini'
@@ -105,7 +104,7 @@ export class ConversationService implements AIConversationService {
         role: msg.role as 'user' | 'assistant' | 'system',
         content: msg.content,
         timestamp: msg.timestamp,
-        metadata: msg.metadata as Record<string, any> || {}
+        metadata: msg.metadata as Record<string, unknown> || {}
       }))
     } catch (error) {
       console.error('Error fetching AI conversation:', error)
@@ -140,8 +139,13 @@ export class ConversationService implements AIConversationService {
         }
       }
 
-      // Build query with pagination
-      const whereCondition: any = {
+      // Build query with pagination  
+      const whereCondition: {
+        aiConversationId: string
+        timestamp?: {
+          lt: Date
+        }
+      } = {
         aiConversationId: conversation.id
       }
 
@@ -178,7 +182,7 @@ export class ConversationService implements AIConversationService {
           role: msg.role as 'user' | 'assistant' | 'system',
           content: msg.content,
           timestamp: msg.timestamp,
-          metadata: msg.metadata as Record<string, any> || {}
+          metadata: msg.metadata as Record<string, unknown> || {}
         })),
         hasMore,
         nextCursor
@@ -245,7 +249,7 @@ export class ConversationService implements AIConversationService {
         role: 'assistant',
         content: aiMessage.content,
         timestamp: aiMessage.timestamp,
-        metadata: aiMessage.metadata as Record<string, any> || {}
+        metadata: aiMessage.metadata as Record<string, unknown> || {}
       }
     } catch (error) {
       console.error('Error sending AI message:', error)

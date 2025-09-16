@@ -7,7 +7,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 
 export interface InfiniteScrollMessage {
   id: string
-  [key: string]: any // Allow any additional message properties
+  [key: string]: unknown // Allow any additional message properties
 }
 
 interface UseInfiniteScrollChatProps<T extends InfiniteScrollMessage> {

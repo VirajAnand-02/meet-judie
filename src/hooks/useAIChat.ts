@@ -3,7 +3,7 @@
  * Handles AI conversation state and API interactions
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { AIMessage } from '@/lib/ai/types'
 
 interface UseAIChatProps {
@@ -31,21 +31,7 @@ export function useAIChat({ contactId }: UseAIChatProps): UseAIChatReturn {
   const [error, setError] = useState<string | null>(null)
   const [lastLoadedContactId, setLastLoadedContactId] = useState<string | null>(null)
 
-  // Load conversation when contactId changes or component mounts
-  useEffect(() => {
-    if (contactId && contactId !== lastLoadedContactId) {
-      setLastLoadedContactId(contactId)
-      // Recover any incomplete messages first, then refresh
-      recoverIncompleteMessages().finally(() => {
-        refreshMessages()
-      })
-    } else if (!contactId) {
-      setMessages([])
-      setLastLoadedContactId(null)
-    }
-  }, [contactId])
-
-  const refreshMessages = async () => {
+  const refreshMessages = useCallback(async () => {
     if (!contactId) return
 
     try {
@@ -76,7 +62,7 @@ export function useAIChat({ contactId }: UseAIChatProps): UseAIChatReturn {
     } finally {
       setLoading(false)
     }
-  }
+  }, [contactId])
 
   // Helper function to update a specific message by ID
   const updateMessageById = (messageId: string, updates: Partial<AIMessage>) => {
@@ -310,7 +296,7 @@ export function useAIChat({ contactId }: UseAIChatProps): UseAIChatReturn {
   }
 
   // Recover incomplete messages
-  const recoverIncompleteMessages = async () => {
+  const recoverIncompleteMessages = useCallback(async () => {
     try {
       const response = await fetch('/api/ai/recover', {
         method: 'POST',
@@ -324,7 +310,21 @@ export function useAIChat({ contactId }: UseAIChatProps): UseAIChatReturn {
     } catch (error) {
       console.error('Failed to recover incomplete messages:', error)
     }
-  }
+  }, [refreshMessages])
+
+  // Load conversation when contactId changes or component mounts
+  useEffect(() => {
+    if (contactId && contactId !== lastLoadedContactId) {
+      setLastLoadedContactId(contactId)
+      // Recover any incomplete messages first, then refresh
+      recoverIncompleteMessages().finally(() => {
+        refreshMessages()
+      })
+    } else if (!contactId) {
+      setMessages([])
+      setLastLoadedContactId(null)
+    }
+  }, [contactId, lastLoadedContactId, recoverIncompleteMessages, refreshMessages])
 
   return {
     messages,

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
-import { Send, Paperclip, Smile, Plus, MoreHorizontal, Menu, X, RefreshCw } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Send, Paperclip, Smile, Plus, MoreHorizontal, Menu, RefreshCw } from "lucide-react"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faComments, faBrain } from '@fortawesome/free-solid-svg-icons'
 import { Button } from "@/components/ui/button"
@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { AiAssistantPanel } from "./ai-assistant-panel"
-import { useInfiniteScrollChat } from "@/hooks/useInfiniteScrollChat"
+import { useInfiniteScrollChat, InfiniteScrollMessage } from "@/hooks/useInfiniteScrollChat"
 
 interface Conversation {
   id: string
@@ -26,13 +26,13 @@ interface Conversation {
   isActive?: boolean
 }
 
-interface Message {
+interface Message extends InfiniteScrollMessage {
   id: string
   content: string
   isOwn: boolean
   timestamp: Date
   messageType?: string
-  metadata?: any
+  metadata?: Record<string, unknown>
 }
 
 interface ChatAreaProps {
@@ -234,6 +234,25 @@ export function ChatArea({ conversation, onToggleSidebar }: ChatAreaProps) {
           </div>
         )}
 
+        {/* Initial loading state */}
+        {messagesLoading && messages.length === 0 && (
+          <div className="flex justify-center items-center h-32">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              <span className="text-sm">Loading messages...</span>
+            </div>
+          </div>
+        )}
+
+        {/* Error state */}
+        {messagesError && (
+          <div className="flex justify-center py-4">
+            <div className="text-red-500 text-sm bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-lg">
+              Error loading messages: {messagesError}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4 md:space-y-6">
           {messages.map((msg) => (
             <div
@@ -278,6 +297,13 @@ export function ChatArea({ conversation, onToggleSidebar }: ChatAreaProps) {
               )}
             </div>
           ))}
+
+          {/* No more messages indicator */}
+          {!messagesLoading && messages.length > 0 && !hasMore && (
+            <div className="flex justify-center py-2">
+              <span className="text-xs text-muted-foreground">No more messages</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -325,9 +351,14 @@ export function ChatArea({ conversation, onToggleSidebar }: ChatAreaProps) {
             <Button
               size="sm"
               onClick={handleSend}
-              className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 h-8 shadow-lg border-0"
+              disabled={sendingMessage || !message.trim()}
+              className="bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 h-8 shadow-lg border-0 disabled:opacity-50"
             >
-              <Send className="h-3 w-3 md:h-4 md:w-4" />
+              {sendingMessage ? (
+                <RefreshCw className="h-3 w-3 md:h-4 md:w-4 animate-spin" />
+              ) : (
+                <Send className="h-3 w-3 md:h-4 md:w-4" />
+              )}
             </Button>
           </div>
         </div>

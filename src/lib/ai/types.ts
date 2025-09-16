@@ -3,12 +3,14 @@
  * Provides type definitions for the modular AI system
  */
 
-export interface AIMessage {
+import { InfiniteScrollMessage } from '@/hooks/useInfiniteScrollChat'
+
+export interface AIMessage extends InfiniteScrollMessage {
   id: string
   role: 'user' | 'assistant' | 'system'
   content: string
   timestamp: Date
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 }
 
 export interface AIConversationContext {

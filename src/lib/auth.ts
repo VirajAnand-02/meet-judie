@@ -1,5 +1,4 @@
 import { getServerSession } from "next-auth/next"
-import { NextRequest } from "next/server"
 import type { AuthOptions } from "next-auth"
 import { PrismaAdapter } from "@next-auth/prisma-adapter"
 import { PrismaClient } from "../generated/prisma"

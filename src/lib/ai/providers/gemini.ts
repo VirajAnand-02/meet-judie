@@ -167,7 +167,7 @@ export class GeminiProvider implements AIProvider {
       const { recentMessages, messageCount, lastActive } = context.conversationHistory
       contextualPrompt += `\n\nRecent conversation history (${messageCount} total messages, last active: ${lastActive.toLocaleDateString()}):`
       
-      recentMessages.slice(-5).forEach((msg: any, index: number) => {
+      recentMessages.slice(-5).forEach((msg: { isFromUser: boolean; content: string }) => {
         const sender = msg.isFromUser ? 'User' : context.contactName
         contextualPrompt += `\n${sender}: ${msg.content}`
       })

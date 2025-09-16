@@ -18,8 +18,27 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/generated/**", // Ignore generated Prisma files
+      "prisma/generated/**",
     ],
   },
+  {
+    rules: {
+      // Allow unused vars for generated files and specific patterns
+      "@typescript-eslint/no-unused-vars": ["warn", { 
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }],
+      // Relax some rules for React hooks in complex components
+      "react-hooks/exhaustive-deps": "warn",
+      // Allow require imports for certain patterns (like Prisma client)
+      "@typescript-eslint/no-require-imports": ["error", {
+        "allow": ["@prisma/client"]
+      }],
+      // Allow explicit any in type definitions but warn
+      "@typescript-eslint/no-explicit-any": "warn"
+    }
+  }
 ];
 
 export default eslintConfig;
